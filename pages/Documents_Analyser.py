@@ -93,8 +93,24 @@ def main():
     st.header("Chat with multiple PDFs :books:")
 
     input = st.text_input("Ask a Question about your pdf: ",key="input")
-    submit = st.button("Ask the Question")
-    clear= st.button("clear conversation")
+    row1 = st.columns(3)
+    submit = row1[0].button("Ask the Question")
+    clear = row1[1].button("Clear Conversation")
+    history = row1[2].button("Show History")
+
+    if history:
+        if st.session_state.messages:
+            st.write("Conversation History:")
+            for turn in reversed(st.session_state.messages):
+                if turn['role']== "user":
+                    st.write(user_template.replace(
+                        "{{MSG}}", turn['parts'][0]), unsafe_allow_html=True)
+                else:
+                    st.write(bot_template.replace(
+                        "{{MSG}}", turn['parts'][0]), unsafe_allow_html=True)
+        else:
+            st.write( "No conversation history yet")
+            
     if clear:
         st.session_state.messages = []
 
@@ -142,13 +158,14 @@ def main():
             st.session_state.messages.append({'role':'model',
                 'parts':[answer.text]})
             # st.session_state.conversation.append((input, response))
-            st.subheader("The Response is ")
+            st.session_state.input = "" 
+            
             # st.write(response.text)
             # st.session_state.chat
             st.write("Conversation History:")
             # for turn in st.session_state.messages:  # Iterate through the updated messages list
             #     st.write(f"**{turn['role']}:** {turn['parts'][0]}")
-            for turn in st.session_state.messages:
+            for turn in reversed(st.session_state.messages):
                 if turn['role']== "user":
                     st.write(user_template.replace(
                         "{{MSG}}", turn['parts'][0]), unsafe_allow_html=True)
