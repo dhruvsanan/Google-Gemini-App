@@ -1,6 +1,7 @@
 import streamlit as st
 
-st.title("Main Page")
+st.title("Welcome to the Google Gemini App")
+st.header("from the sidebar, choose the app that you want to use")
 # app_selection = st.sidebar.selectbox("Select an app:", ["Conversation App", "Gym Trainer", "Documents Analyser", "Image Recognition"])
 
 # if app_selection == "Conversation App":
