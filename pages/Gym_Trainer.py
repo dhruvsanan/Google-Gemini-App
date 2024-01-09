@@ -28,8 +28,8 @@ def main():
 
     st.header("Gemini Image")
 
-    input = st.text_input("Input: ",key="input")
-    uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png","webp"])
+    input = st.text_input("Ask a question ",key="input")
+    uploaded_file = st.file_uploader("Upload the image of your body", type=["jpg", "jpeg", "png","webp"])
     image=""   
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
@@ -44,7 +44,7 @@ def main():
                     in addition to that provide a complementry gym routine for a week tailored to the input image.
                 """
 
-    submit=st.button("Tell me about the image")
+    submit=st.button("Tell me about my body")
 
 
     if submit: 
