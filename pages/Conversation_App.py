@@ -27,7 +27,7 @@ def main():
     st.set_page_config(page_title="Gemini Q&A")
     st.header("Gemini Q&A")
     st.write(css, unsafe_allow_html=True)
-    input = st.text_input("Input: ",key="input")
+    input = st.text_area("Input: ",key="input")
     row1 = st.columns(3)
     submit = row1[0].button("Ask the Question")
     clear = row1[1].button("Clear Conversation")

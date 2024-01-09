@@ -140,39 +140,62 @@ def main():
 
     if submit:
         if not st.session_state.df.empty:
-            with st.spinner("Processing"): 
-                # response = chat.send_message(input,stream= True)
-                # st.session_state.messages = st.session_state.messages or []
-                passage = find_best_passage(input, st.session_state.df)
-                prompt = make_prompt(input, passage)
-                text_model = genai.GenerativeModel('gemini-pro')
-                answer = text_model.generate_content(prompt)
-                messages = [
-                    {'role':'user',
-                    'parts': [input]}
-                ]
-                st.session_state.messages.extend(messages)            
-                # ai_messages = [
-                #     {'role':'model',
-                #     'parts': [response.text]}
-                # ]
-                # st.session_state.messages.append(ai_messages)
-                # for chunk in response:           
-                st.session_state.messages.append({'role':'model',
-                    'parts':[answer.text]})
-                # st.session_state.conversation.append((input, response))            
-                # st.write(response.text)
-                # st.session_state.chat
-                st.write("Conversation History:")
-                # for turn in st.session_state.messages:  # Iterate through the updated messages list
-                #     st.write(f"**{turn['role']}:** {turn['parts'][0]}")
-                for turn in reversed(st.session_state.messages):
-                    if turn['role']== "user":
-                        st.write(user_template.replace(
-                            "{{MSG}}", turn['parts'][0]), unsafe_allow_html=True)
-                    else:
-                        st.write(bot_template.replace(
-                            "{{MSG}}", turn['parts'][0]), unsafe_allow_html=True)
+            if input:
+                with st.spinner("Processing"): 
+                    # response = chat.send_message(input,stream= True)
+                    # st.session_state.messages = st.session_state.messages or []
+                    passage = find_best_passage(input, st.session_state.df)
+                    prompt = make_prompt(input, passage)
+                    text_model = genai.GenerativeModel('gemini-pro')
+                    answer = text_model.generate_content(prompt)
+                    messages = [
+                        {'role':'user',
+                        'parts': [input]}
+                    ]
+                    st.session_state.messages.extend(messages)            
+                    # ai_messages = [
+                    #     {'role':'model',
+                    #     'parts': [response.text]}
+                    # ]
+                    # st.session_state.messages.append(ai_messages)
+                    # for chunk in response:           
+                    st.session_state.messages.append({'role':'model',
+                        'parts':[answer.text]})
+                    # st.session_state.conversation.append((input, response))            
+                    # st.write(response.text)
+                    # st.session_state.chat
+                    st.write("Conversation History:")
+                    # for turn in st.session_state.messages:  # Iterate through the updated messages list
+                    #     st.write(f"**{turn['role']}:** {turn['parts'][0]}")
+                    for turn in reversed(st.session_state.messages):
+                        if turn['role']== "user":
+                            st.write(user_template.replace(
+                                "{{MSG}}", turn['parts'][0]), unsafe_allow_html=True)
+                        else:
+                            st.write(bot_template.replace(
+                                "{{MSG}}", turn['parts'][0]), unsafe_allow_html=True)
+            else:
+                with st.spinner("Processing"): 
+                    input= "Provide a breif deatil about the text from the reference passage"
+                    passage = find_best_passage(input, st.session_state.df)
+                    prompt = make_prompt(input, passage)
+                    text_model = genai.GenerativeModel('gemini-pro')
+                    answer = text_model.generate_content(prompt)
+                    messages = [
+                        {'role':'user',
+                        'parts': [input]}
+                    ]
+                    st.session_state.messages.extend(messages)                  
+                    st.session_state.messages.append({'role':'model',
+                        'parts':[answer.text]})
+                    st.write("Conversation History:")
+                    for turn in reversed(st.session_state.messages):
+                        if turn['role']== "user":
+                            st.write(user_template.replace(
+                                "{{MSG}}", turn['parts'][0]), unsafe_allow_html=True)
+                        else:
+                            st.write(bot_template.replace(
+                                "{{MSG}}", turn['parts'][0]), unsafe_allow_html=True)
         else:
             st.write("Please upload your document in the sidebar")
 
