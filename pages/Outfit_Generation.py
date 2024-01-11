@@ -195,7 +195,7 @@ def main():
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    input = st.text_input("Describe your desired outfit with as much detail as possible ",key="input")
+    input = st.text_input("Give a specific description of the attire you have in mind or leave it blank to let AI choose for you.",key="input")
     num_output = st.number_input("Desired number of images", value=1, placeholder="Type a number...", max_value=4, min_value=1)
     gender = st.radio(
     "Gender",
