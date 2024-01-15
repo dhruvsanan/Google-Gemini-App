@@ -235,7 +235,7 @@ def main():
                         # st.write(image_prompt)
                         st.write(i+1)
                         st.write(image_answer.text)
-                        prompt=image_answer.text + gender + "should have a detailed beautiful/ handsome realistic facial features"
+                        prompt = " The "+ gender + " should have a detailed beautiful/ handsome realistic facial features." + image_answer.text
                         # st.write(prompt)
                         output = realvisxl_request(prompt)
                         # output= "https://replicate.delivery/pbxt/6BcZ1RqeYpSJMaqffeQon4fsfsQrsk6bM1j1IxG9Ce9DnErFJA/out-0.png"
