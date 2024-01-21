@@ -8,3 +8,5 @@ langchain-community==0.0.3
 replicate
 opencv-python
 stqdm
+pdf2image
+cv2
