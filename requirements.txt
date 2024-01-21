@@ -9,4 +9,3 @@ replicate
 opencv-python
 stqdm
 pdf2image
-cv2
