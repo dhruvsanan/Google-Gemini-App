@@ -97,7 +97,7 @@ st.set_page_config(page_title="Video Check")
 
 st.header(" Video Check")
 
-input = st.text_input("Input: ",key="input")
+question = st.text_input("Input: ",key="input")
 video_file = st.file_uploader("Upload a video", type=["mp4"])
 
 # st.write(video_file._file_urls.upload_url)
@@ -106,16 +106,12 @@ submit=st.button("Tell me about the Video")
 input_prompt="""
 imagine the continuation of the images as a video.
 Hey Act Like a skilled or very experience Video Analyzer.
-Train your self with only the transcript and the video.
+Train your self with only the video and the transcript provided.
 your task is to answer the question only based on the transcript and the video that you recieved.
-
-transcript:{transcript_text}
-question:{input}
-
 Be sure to respond in a complete sentence, being comprehensive, including all relevant background information. 
 However, you are talking to a non-technical audience, so be sure to break down complicated concepts and 
 strike a friendly and converstional tone. 
-If the question is out of the transcript or the video, you may ignore it.
+If the answer to the question is out of the transcript or the video, you may ignore it or say sorry! I am unable answer it.
 """
 
 if submit: 
@@ -129,7 +125,7 @@ if submit:
         images = handle_image_uploads(frames)
         transcript_text = transcribe_audio(file_path)
         st.write(transcript_text)
-        response = image_model.generate_content([input_prompt, *images])
+        response = image_model.generate_content([input_prompt,transcript_text,question, *images])
         st.subheader("The Response is")
         st.write(response.text)
         # image_data = response.text.split(",")[1] 
