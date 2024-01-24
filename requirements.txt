@@ -9,3 +9,7 @@ replicate
 opencv-python
 stqdm
 pdf2image
+moviepy
+ffmpeg
+openai
+opencv-contrib-python

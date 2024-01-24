@@ -26,6 +26,48 @@ def save_uploaded_video(video_file, file_path):
     with open(file_path, "wb") as f:
         f.write(video_file.read())
 
+import cv2
+
+def get_frames_n(video_file):
+    cap = cv2.VideoCapture(video_file)
+    frame_count = 0
+    frame_rate = cap.get(cv2.CAP_PROP_FPS)
+    frame_interval = frame_rate
+    frames = []
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+        if frame_count % frame_interval == 0:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)  # Resize the frame to half its original size
+            frames.append(frame)
+            # st.image(frame)
+        frame_count += 1
+    cap.release()
+    return frames
+
+import cv2
+
+def get_frames_m(video_file):
+    cap = cv2.VideoCapture(video_file)
+    frame_count = 0
+    frame_rate = cap.get(cv2.CAP_PROP_FPS)
+    frame_interval = frame_rate
+    frames = []
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+        if frame_count % frame_interval == 0:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame = cv2.pyrDown(frame)  # Downsample the frame
+            frames.append(frame)
+            # st.image(frame)
+        frame_count += 1
+    cap.release()
+    return frames
+
 def get_frames(video_file):
     cap = cv2.VideoCapture(video_file)
     frame_count = 0
@@ -38,7 +80,9 @@ def get_frames(video_file):
             break
         if frame_count % frame_interval == 0:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            st.image(frame)
             frames.append(frame)
+            # st.image(frame)
         frame_count += 1
     cap.release()
     return frames
@@ -96,9 +140,9 @@ def create_image(data):
 #         json.dump(metadata, f)
 
 
-st.set_page_config(page_title="Gemini Video")
+st.set_page_config(page_title="Video Check")
 
-st.header("Gemini Video")
+st.header(" Video Check")
 
 input = st.text_input("Input: ",key="input")
 video_file = st.file_uploader("Upload a video", type=["mp4"])

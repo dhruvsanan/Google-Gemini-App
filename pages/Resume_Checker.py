@@ -85,11 +85,25 @@ You are an skilled ATS (Applicant Tracking System) scanner with a deep understan
 your task is to evaluate the resume against the provided job description. give me the percentage of match if the resume matches
 the job description. First the output should come as percentage and then keywords missing and last final thoughts.
 """
+input_prompt5 = """
+Hey Act Like a skilled or very experience ATS(Application Tracking System)
+with a deep understanding of tech field,software engineering,data science ,data analyst
+and big data engineer. You are an skilled ATS (Applicant Tracking System) scanner with a deep understanding of data science and ATS functionality, 
+your task is to evaluate the resume against the provided job description. Answer the following question based on the resume of the candidate.
+"""
+question=st.text_area("What do you want to know?")
 
 if submit1:
     if uploaded_file is not None:
         pdf_content = input_pdf_setup(uploaded_file)
-        response = get_gemini_response(input_prompt1, pdf_content, input_text)
+        if input_text:
+            response = get_gemini_response(input_prompt1, pdf_content, input_text)
+            st.subheader(response)
+            
+        elif question:
+            st.write(input_prompt5)
+            response=get_gemini_response(input_prompt5, pdf_content, question)
+            st.subheader(response)
         st.subheader("The Response is")
         st.write(response)
     else:
