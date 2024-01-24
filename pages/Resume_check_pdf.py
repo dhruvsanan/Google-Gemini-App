@@ -10,6 +10,18 @@ load_dotenv() ## load all our environment variables
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 model=genai.GenerativeModel('gemini-pro')
 
+import requests 
+from bs4 import BeautifulSoup
+
+def extract_job_description(url):
+    response = requests.get(url) 
+    html_content = response.text
+    soup = BeautifulSoup(html_content, "html.parser")
+    job_description_section = soup.find("section", {"class": "description"})
+    job_description = job_description_section.get_text()
+    job_description = job_description.strip()
+    return job_description
+
 def get_gemini_repsonse(input_prompt4, text, jd):
     if jd:
         response=model.generate_content([input_prompt4, text, jd])
@@ -63,17 +75,19 @@ your task is to evaluate the resume against the provided job description. Answer
 ## streamlit app
 st.title("Smart ATS")
 st.text("Improve Your Resume ATS")
-jd=st.text_area("Paste the Job Description")
 uploaded_file=st.file_uploader("Upload Your Resume",type="pdf",help="Please uplaod the pdf")
-question=st.text_input("What do you want to know?")
-submit = st.button("Info from resume")
-submit1 = st.button("Tell Me About the Resume")
-
+jd=st.text_area("Paste the Job Description")
+job_url = st.text_input("LinkedIn Job URL") 
 submit2 = st.button("How Can I Improvise my Skills")
 
 submit3 = st.button("What are the Keywords That are Missing")
 
 submit4 = st.button("Percentage match")
+question=st.text_input("What do you want to know?")
+submit = st.button("Info from resume")
+submit1 = st.button("Tell Me About the Resume")
+
+
 if submit:
     text=input_pdf_text(uploaded_file)
     if question:
@@ -88,19 +102,43 @@ elif submit1:
         st.subheader(response.text)
     
 elif submit2:
-        text=input_pdf_text(uploaded_file)
-        response=get_gemini_repsonse(input_prompt2, text, jd)
-        st.subheader(response)
+        if job_url:
+            text=input_pdf_text(uploaded_file)
+            jd = extract_job_description(job_url)
+            parts = jd.rsplit("Powered by ", 1)
+            job_description = parts[0]
+            response=get_gemini_repsonse(input_prompt2, text, jd)
+            st.subheader(response)
+        else:
+            text=input_pdf_text(uploaded_file)
+            response=get_gemini_repsonse(input_prompt2, text, jd)
+            st.subheader(response)
     
 elif submit3:
-        text=input_pdf_text(uploaded_file)
-        response=get_gemini_repsonse(input_prompt4, text, jd)
-        st.subheader(response)
+        if job_url:
+            text=input_pdf_text(uploaded_file)
+            jd = extract_job_description(job_url)
+            parts = jd.rsplit("Powered by ", 1)
+            job_description = parts[0]
+            response=get_gemini_repsonse(input_prompt3, text, jd)
+            st.subheader(response)
+        else:
+            text=input_pdf_text(uploaded_file)
+            response=get_gemini_repsonse(input_prompt3, text, jd)
+            st.subheader(response)
 
 elif submit4:
-        text=input_pdf_text(uploaded_file)
-        response=get_gemini_repsonse(input_prompt4, text, jd)
-        st.subheader(response)
+        if job_url:
+            text=input_pdf_text(uploaded_file)
+            jd = extract_job_description(job_url)
+            parts = jd.rsplit("Powered by ", 1)
+            job_description = parts[0]
+            response=get_gemini_repsonse(input_prompt4, text, jd)
+            st.subheader(response)
+        else:
+            text=input_pdf_text(uploaded_file)
+            response=get_gemini_repsonse(input_prompt4, text, jd)
+            st.subheader(response)
 
 st.markdown("---")
 st.caption("Resume Expert - Making Job Applications Easier")

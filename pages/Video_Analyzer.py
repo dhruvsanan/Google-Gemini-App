@@ -164,7 +164,7 @@ Be sure to respond in a complete sentence, being comprehensive, including all re
 However, you are talking to a non-technical audience, so be sure to break down complicated concepts and 
 strike a friendly and converstional tone. 
 If the answer to the question is out of the transcript or the video, you may ignore it or say sorry! I am unable answer it.
-"""
+Remember you only have to answer to question if the information is available in either transcript or video. Do not provide details of anything else including video and transcript."""
 
 if submit: 
     if video_file is not None:
@@ -177,7 +177,7 @@ if submit:
         images = handle_image_uploads(frames)
         transcript_text = transcribe_audio(file_path)
         st.write(transcript_text)
-        response = image_model.generate_content([input_prompt,transcript_text,question, *images])
+        response = image_model.generate_content([transcript_text, *images ,input_prompt, question])
         st.subheader("The Response is")
         st.write(response.text)
         # image_data = response.text.split(",")[1] 
