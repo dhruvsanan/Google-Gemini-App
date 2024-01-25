@@ -6,14 +6,9 @@ import os
 import tempfile
 import google.generativeai as genai
 from PIL import Image
-import base64
-import io
-import numpy as np
 import cv2
-import math
 import datetime
 import openai
-import sys
 genai.configure(api_key=os.getenv("GOOGLE_API _KEY"))
 
 image_model=genai.GenerativeModel("gemini-pro-vision")

@@ -4,10 +4,7 @@ load_dotenv()
 
 import streamlit as st
 import os
-from PIL import Image
-import io
 import PyPDF2 as pdf
-import base64
 import re
 from stqdm import stqdm
 
