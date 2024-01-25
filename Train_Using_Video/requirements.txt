@@ -2,8 +2,5 @@ streamlit
 google-generativeai
 PyPDF2
 python-dotenv
-opencv-python-headless
 openai
-opencv-contrib-python
 opencv-contrib-python-headless
-opencv-python
