@@ -1,17 +1,3 @@
 streamlit 
 google-generativeai
-PyPDF2
 python-dotenv
-huggingface-hub==0.20.1
-langchain==0.0.350
-langchain-community==0.0.3
-replicate
-opencv-python
-stqdm
-pdf2image
-moviepy
-ffmpeg
-openai
-opencv-contrib-python
-audio_recorder_streamlit
-bs4
