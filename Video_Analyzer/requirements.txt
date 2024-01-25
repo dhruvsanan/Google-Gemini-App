@@ -1,12 +1,6 @@
-# streamlit==0.81.1 
+streamlit
 google-generativeai
 PyPDF2
 python-dotenv
 openai
-# opencv-contrib-python
-# opencv-contrib-python-headless
-# opencv-python
-# opencv-python-headless
 opencv-contrib-python-headless
-streamlit==0.81.1
-# streamlit_webrtc==0.20.0
