@@ -5,7 +5,7 @@ import google.generativeai as genai
 from htmlTemplates import css, bot_template, user_template
 import os
 
-genai.configure(api_key=os.getenv("GOOGLE_API _KEY"))
+genai.configure(api_key=st.secrets("GOOGLE_API _KEY"))
 
 
 
