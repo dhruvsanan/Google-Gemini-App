@@ -13,3 +13,5 @@ moviepy
 ffmpeg
 openai
 opencv-contrib-python
+audio_recorder_streamlit
+bs4
