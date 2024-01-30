@@ -3,3 +3,6 @@ google-generativeai
 PyPDF2
 python-dotenv
 langchain
+langchain_google_genai
+langchain_community
+bs4
