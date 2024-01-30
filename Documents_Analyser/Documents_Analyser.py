@@ -5,75 +5,83 @@ import google.generativeai as genai
 from htmlTemplates import css, bot_template, user_template
 import os
 
-genai.configure(api_key=st.secrets.credentials.GOOGLE_API_KEY)
+genai.configure(api_key=os.getenv("GOOGLE_API _KEY"))
 
-
-
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+# from langchain.vectorstores import FAISS
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain.chains.question_answering import load_qa_chain
+from langchain.prompts import PromptTemplate
 from htmlTemplates import css, bot_template, user_template
 import pandas as pd
 import numpy as np
 import textwrap
+import textract
 
-model = 'models/embedding-001'
+from langchain_community.document_loaders import WebBaseLoader
+from langchain_community.vectorstores import FAISS
+from langchain.text_splitter  import RecursiveCharacterTextSplitter
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.documents import Document
+from langchain.chains import create_retrieval_chain
+from langchain.chains import create_history_aware_retriever
+from langchain_core.prompts import MessagesPlaceholder
+from langchain_core.messages import HumanMessage, AIMessage
 
-def get_pf_text(pdf_docs):
-    text=[]
+import requests
+from bs4 import BeautifulSoup
+
+def get_text_from_urls(urls):
+    def get_text_from_url(url):
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, "html.parser")
+        texts = soup.get_text()
+        if "403 Forbidden" in texts:
+            st.warning( f"You don't have permission to access {url}")
+        else:
+            return texts
+    texts = "" 
+    for url in urls.split("\n"): 
+        if get_text_from_url(url):
+            texts +=(get_text_from_url(url))
+    st.write(texts)
+    return texts
+
+def get_pdf_text(pdf_docs):
+    text=""
     for pdf in pdf_docs:
-        doc=""
-        pdf_reader = PdfReader(pdf)
+        pdf_reader= PdfReader(pdf)
         for page in pdf_reader.pages:
-            doc += page.extract_text()
-        text.append(doc)
-    return text
+            text+= page.extract_text()
+    return  text
 
 
-# def get_text_chunks(raw_text):
-#     text_splitter= CharacterTextSplitter(
-#         separator="\n",
-#         chunk_size=1000, 
-#         chunk_overlap=200, 
-#         length_function = len)
-#     text_chunks=text_splitter.split_text(raw_text)
-#     return text_chunks
+def get_retriever(text):
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+    text = text_splitter.split_text(text)
+    embeddings = GoogleGenerativeAIEmbeddings(model = "models/embedding-001")
+    vector_store = FAISS.from_texts(text, embedding=embeddings)
+    retriever = vector_store.as_retriever()
+    return retriever
 
+def get_response(retriever,chat_history,question):
 
-def text_to_df(raw_text):
-    df = pd.DataFrame(raw_text)
-    df.columns = ['Text']
-    embeddings=genai.embed_content(model=model,
-                             content=raw_text,
-                             task_type="retrieval_document")["embedding"]
-    df['Embeddings'] = embeddings
-    return df
-
-
-def find_best_passage(query, dataframe):
-  """
-  Compute the distances between the query and each document in the dataframe
-  using the dot product.
-  """
-  query_embedding = genai.embed_content(model=model,
-                                        content=query,
-                                        task_type="retrieval_query")
-  dot_products = np.dot(np.stack(dataframe['Embeddings']), query_embedding["embedding"])
-  idx = np.argmax(dot_products)
-  return dataframe.iloc[idx]['Text'] # Return text from index with max value
-
-def make_prompt(query, relevant_passage):
-  escaped = relevant_passage.replace("'", "").replace('"', "").replace("\n", " ")
-  prompt = textwrap.dedent("""You are a helpful and informative bot that answers questions using text from the reference passage included below. \
-  Be sure to respond in a complete sentence, being comprehensive, including all relevant background information. \
-  However, you are talking to a non-technical audience, so be sure to break down complicated concepts and \
-  strike a friendly and converstional tone. \
-  If the passage is irrelevant to the answer, you may ignore it.
-  QUESTION: '{query}'
-  PASSAGE: '{relevant_passage}'
-
-    ANSWER:
-  """).format(query=query, relevant_passage=escaped)
-
-  return prompt
+    model = ChatGoogleGenerativeAI(model="gemini-pro", convert_system_message_to_human=True,
+                                temperature=0.3)
+    prompt = ChatPromptTemplate.from_messages([
+    ("system", "{context}\n\n Answer the user's questions based only on the above context and if answer is not available in the above context don't provide the wrong answer, instead say sorry I cannot answer this question."),
+    MessagesPlaceholder(variable_name="chat_history"),
+    ("user", "{input}")
+    ])
+    document_chain = create_stuff_documents_chain(model, prompt)
+    conversational_retrieval_chain = create_retrieval_chain(retriever, document_chain)
+    response = conversational_retrieval_chain.invoke({
+    'chat_history': chat_history,
+    "input": question
+    })
+    return response['answer']
 
 def main():
     load_dotenv()
@@ -84,125 +92,44 @@ def main():
     
     st.write(css, unsafe_allow_html=True)
 
-    if "df" not in st.session_state:
-        st.session_state.df = pd.DataFrame()
-
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = None
     
     st.title("Chat with multiple PDFs :books:")
-    st.header("First upload your document in the sidebar")
+    st.header("Upload your document in the sidebar")
+    pdf_docs = st.file_uploader("Upload your PDFs here", accept_multiple_files=True)
+    urls = st.text_area("Enter the URLs (one per line):")
+    question = st.text_input("Ask a Question about your pdf: ",key="input")
 
-    input = st.text_input("Ask a Question about your pdf: ",key="input")
     row1 = st.columns(3)
     submit = row1[0].button("Ask the Question")
     clear = row1[1].button("Clear Conversation")
-    history = row1[2].button("Show History")
 
-    if history:
-        if st.session_state.messages:
-            st.write("Conversation History:")
-            for turn in reversed(st.session_state.messages):
-                if turn['role']== "user":
-                    st.write(user_template.replace(
-                        "{{MSG}}", turn['parts'][0]), unsafe_allow_html=True)
-                else:
-                    st.write(bot_template.replace(
-                        "{{MSG}}", turn['parts'][0]), unsafe_allow_html=True)
-        else:
-            st.write( "No conversation history yet")
-            
     if clear:
-        st.session_state.messages = []
+        st.session_state.chat_history = []
 
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-
-    with st.sidebar:
-        st.subheader("Your Documents:")
-        pdf_docs = st.file_uploader("Upload your PDFs here", accept_multiple_files=True)
-        if st.button("Upload"):
-            with st.spinner("Processing"): 
-                # get pdf text
-                raw_text= get_pf_text(pdf_docs)
-                
-                # get the text chunks
-                # text_chunks= get_text_chunks(raw_text)
-                # st.write(text_chunks)
-                # st.write(raw_text)
-                # create vector store
-                st.session_state.df = text_to_df(raw_text)
-                st.write("Upload Complete")
-                # st.write(st.session_state.df)
-                #docs = vectorstore.similarity_search(text_input)
-                # create conversation gain
-                # st.session_state.conversation = get_conversation_chain(vectorstore)
-
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+        
     if submit:
-        if not st.session_state.df.empty:
-            if input:
-                with st.spinner("Processing"): 
-                    # response = chat.send_message(input,stream= True)
-                    # st.session_state.messages = st.session_state.messages or []
-                    passage = find_best_passage(input, st.session_state.df)
-                    prompt = make_prompt(input, passage)
-                    text_model = genai.GenerativeModel('gemini-pro')
-                    answer = text_model.generate_content(prompt)
-                    messages = [
-                        {'role':'user',
-                        'parts': [input]}
-                    ]
-                    st.session_state.messages.extend(messages)            
-                    # ai_messages = [
-                    #     {'role':'model',
-                    #     'parts': [response.text]}
-                    # ]
-                    # st.session_state.messages.append(ai_messages)
-                    # for chunk in response:           
-                    st.session_state.messages.append({'role':'model',
-                        'parts':[answer.text]})
-                    # st.session_state.conversation.append((input, response))            
-                    # st.write(response.text)
-                    # st.session_state.chat
-                    st.write("Conversation History:")
-                    # for turn in st.session_state.messages:  # Iterate through the updated messages list
-                    #     st.write(f"**{turn['role']}:** {turn['parts'][0]}")
-                    for turn in reversed(st.session_state.messages):
-                        if turn['role']== "user":
-                            st.write(user_template.replace(
-                                "{{MSG}}", turn['parts'][0]), unsafe_allow_html=True)
-                        else:
-                            st.write(bot_template.replace(
-                                "{{MSG}}", turn['parts'][0]), unsafe_allow_html=True)
+        if urls or pdf_docs:
+            if urls and pdf_docs:
+                docs= get_text_from_urls(urls)
+                text = get_pdf_text( pdf_docs)
+                text +=docs
+            elif urls:
+                text= get_text_from_urls(urls)
             else:
-                with st.spinner("Processing"): 
-                    input= "Provide a breif deatil about the text from the reference passage"
-                    passage = find_best_passage(input, st.session_state.df)
-                    prompt = make_prompt(input, passage)
-                    text_model = genai.GenerativeModel('gemini-pro')
-                    answer = text_model.generate_content(prompt)
-                    messages = [
-                        {'role':'user',
-                        'parts': [input]}
-                    ]
-                    st.session_state.messages.extend(messages)                  
-                    st.session_state.messages.append({'role':'model',
-                        'parts':[answer.text]})
-                    st.write("Conversation History:")
-                    for turn in reversed(st.session_state.messages):
-                        if turn['role']== "user":
-                            st.write(user_template.replace(
-                                "{{MSG}}", turn['parts'][0]), unsafe_allow_html=True)
-                        else:
-                            st.write(bot_template.replace(
-                                "{{MSG}}", turn['parts'][0]), unsafe_allow_html=True)
-        else:
-            st.write("Please upload your document in the sidebar")
+                text = get_pdf_text( pdf_docs)
+                retriever= get_retriever(text)
+                response = get_response(retriever,st.session_state.chat_history,question)
+                st.session_state.chat_history = [
+                HumanMessage(content=question),
+                AIMessage(content=response)
+                ]
+                st.write(response)
 
+        else:
+            st.write("Please provide url of website or upload your docs")
+
+        
 if __name__== '__main__':
     main()
-
-# src= https://colab.research.google.com/github/google/generative-ai-docs/blob/main/site/en/examples/doc_search_emb.ipynb#scrollTo=J76TNa3QDwCc
-# src= https://colab.research.google.com/github/google/generative-ai-docs/blob/main/site/en/tutorials/python_quickstart.ipynb?authuser=0#scrollTo=QvvWFy08e5c5
-# src= https://ai.google.dev/docs/semantic_retriever
-# src= https://ai.google.dev/examples?keywords=prompt
