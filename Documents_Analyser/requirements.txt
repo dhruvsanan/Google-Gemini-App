@@ -6,4 +6,3 @@ langchain
 langchain_google_genai
 langchain_community
 bs4
-FAISS
