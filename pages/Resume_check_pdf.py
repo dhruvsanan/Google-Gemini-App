@@ -75,16 +75,29 @@ your task is to evaluate the resume against the provided job description. Answer
 """
 
 # streamlit app
-st.title("Smart ATS")
-st.text("Improve Your Resume ATS")
+st.set_page_config(page_title="Resume Expert")
+
+st.header("JobFit Analyzer")
+st.subheader(
+    'This Application helps you in your Resume Review with help of GEMINI AI [LLM]')
 uploaded_file = st.file_uploader(
     "Upload Your Resume", type="pdf", help="Please uplaod the pdf")
 jdButton = st.radio(
     "Jd format",
-    ["LinkedIn URL", "Text JD"])
-
+    ["LinkedIn URL", "Text JD"], )
+job_url = ""
+jd = ""
 if jdButton == "LinkedIn URL":
     job_url = st.text_input("LinkedIn Job URL")
+    if job_url:
+        jd = extract_job_description(job_url)
+        parts = jd.rsplit("Roles", 1)
+        job_title = parts[0]
+        job_description = parts[1].rsplit("Show more", 1)[0]
+        if jd == job_description:
+            st.write("same")
+        st.write(job_title)
+        st.write(job_description)
 else:
     jd = st.text_area("Paste the Job Description")
 
@@ -98,9 +111,9 @@ question = st.text_input("What do you want to know?")
 submit = st.button("Info from resume")
 submit1 = st.button("Tell Me About the Resume")
 
-
+text = input_pdf_text(uploaded_file)
 if submit:
-    text = input_pdf_text(uploaded_file)
+
     if question:
         response = get_gemini_repsonse(input_prompt5, text, question)
         st.subheader(response)
@@ -108,46 +121,40 @@ if submit:
         st.write("Please ask a question")
 
 elif submit1:
-    text = input_pdf_text(uploaded_file)
+
     response = model.generate_content([input_prompt1, text])
     st.subheader(response.text)
 
 elif submit2:
-    if job_url:
-        text = input_pdf_text(uploaded_file)
-        jd = extract_job_description(job_url)
-        parts = jd.rsplit("Powered by ", 1)
-        job_description = parts[0]
+    if jd:
         response = get_gemini_repsonse(input_prompt2, text, jd)
         st.subheader(response)
     else:
-        text = input_pdf_text(uploaded_file)
+        jd = extract_job_description(job_url)
+        parts = jd.rsplit("Powered by ", 1)
+        job_description = parts[0]
         response = get_gemini_repsonse(input_prompt2, text, jd)
         st.subheader(response)
 
 elif submit3:
-    if job_url:
-        text = input_pdf_text(uploaded_file)
-        jd = extract_job_description(job_url)
-        parts = jd.rsplit("Powered by ", 1)
-        job_description = parts[0]
+    if jd:
         response = get_gemini_repsonse(input_prompt3, text, jd)
         st.subheader(response)
     else:
-        text = input_pdf_text(uploaded_file)
+        jd = extract_job_description(job_url)
+        parts = jd.rsplit("Powered by ", 1)
+        job_description = parts[0]
         response = get_gemini_repsonse(input_prompt3, text, jd)
         st.subheader(response)
 
 elif submit4:
-    if job_url:
-        text = input_pdf_text(uploaded_file)
-        jd = extract_job_description(job_url)
-        parts = jd.rsplit("Powered by ", 1)
-        job_description = parts[0]
+    if jd:
         response = get_gemini_repsonse(input_prompt4, text, jd)
         st.subheader(response)
     else:
-        text = input_pdf_text(uploaded_file)
+        jd = extract_job_description(job_url)
+        parts = jd.rsplit("Powered by ", 1)
+        job_description = parts[0]
         response = get_gemini_repsonse(input_prompt4, text, jd)
         st.subheader(response)
 
