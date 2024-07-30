@@ -44,8 +44,7 @@ def main():
                 """
     input_prompt2 = """
                 You will receive an image of a body &
-                you will have to analyse the body type and 
-                state the body type of the person and
+                you give a rough estimate of what the body type might be and
                     answer questions based on the input image and
                     in addition to that provide a complementry gym routine for a week tailored to the input image.
                 Make sure you act as a professional trainner. Don't try to give no as answer. Even if you don't understand, just give a generic answer.
