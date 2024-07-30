@@ -13,7 +13,7 @@ text_model = genai.GenerativeModel("gemini-pro")
 
 
 def gemini_response(input, image, prompt):
-    if input != "":
+    if input:
         if image:
             response = image_model.generate_content(
                 [input, image, prompt], stream=True, safety_settings={'HARASSMENT': 'block_none', })
