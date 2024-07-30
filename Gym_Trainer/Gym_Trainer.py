@@ -8,7 +8,7 @@ from PIL import Image
 
 genai.configure(api_key=os.getenv("GOOGLE_API _KEY"))
 
-image_model = genai.GenerativeModel("gemini-1.5-flash")
+image_model = genai.GenerativeModel("gemini-1.5-pro")
 text_model = genai.GenerativeModel("gemini-pro")
 
 
