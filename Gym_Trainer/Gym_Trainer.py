@@ -9,21 +9,19 @@ from PIL import Image
 genai.configure(api_key=os.getenv("GOOGLE_API _KEY"))
 
 image_model = genai.GenerativeModel("gemini-1.5-pro")
-text_model = genai.GenerativeModel("gemini-pro")
 
 
-def gemini_response(input, image, prompt):
+def gemini_response(input, image, prompt, input_prompt2):
     if input:
         if image:
             response = image_model.generate_content(
-                [input, image, prompt], stream=True, safety_settings={'HARASSMENT': 'block_none', })
+                [input, image, prompt+input_prompt2], stream=True, safety_settings={'HARASSMENT': 'block_none', })
         else:
             response = image_model.generate_content(
                 [input, prompt], stream=True, safety_settings={'HARASSMENT': 'block_none'})
-
     else:
         response = image_model.generate_content(
-            [image, prompt], stream=True, safety_settings={'HARASSMENT': 'block_none'})
+            [image, prompt+input_prompt2], stream=True, safety_settings={'HARASSMENT': 'block_none'})
     return response
 
 
@@ -42,7 +40,9 @@ def main():
         st.image(image, caption="Uploaded Image.", use_column_width=True)
 
     input_prompt = """
-                You are an expert gymming trainer.
+                You are an expert gymming trainer. Consider yourself as a profesional trainer who provides training plans.
+                """
+    input_prompt2 = """
                 You will receive an input image of a body &
                 you will have to analyse the body type and 
                 state the body type of the person and
@@ -53,7 +53,7 @@ def main():
     submit = st.button("Tell me about my body")
 
     if submit:
-        response = gemini_response(input, image, input_prompt)
+        response = gemini_response(input, image, input_prompt, input_prompt2)
         st.subheader("The Response is")
         for chunk in response:
             st.write(chunk.text)
