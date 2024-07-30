@@ -14,28 +14,18 @@ model = genai.GenerativeModel('gemini-pro')
 
 def extract_job_description(url):
     response = requests.get(url)
-    soup = BeautifulSoup(response.content, "html.parser")
+    html_content = response.text
+    soup = BeautifulSoup(html_content, "html.parser")
     job_description_section = soup.find("section", {"class": "description"})
-    job_description = job_description_section.get_text()
-    job_description = job_description.strip()
-    job_description = job_description.rsplit("Show more", 1)[0]
-    job_title_element = soup.find_all('h1')
-    job_title = job_title_element[0].text.strip()
-    return job_title, job_description
-# def extract_job_description(url):
-#     response = requests.get(url)
-#     html_content = response.text
-#     soup = BeautifulSoup(html_content, "html.parser")
-#     job_description_section = soup.find("section", {"class": "description"})
-#     job_description = job_description_section.get_text()
-#     job_description = job_description.strip()
-#     return job_description
+    job_description = job_description_section.get_text(strip=True)
+    return job_description
 
 
 def get_gemini_repsonse(input_prompt4, text, jd):
     if jd:
-        response = model.generate_content([input_prompt4, text, jd])
-        return response.text
+        response = model.generate_content(
+            [input_prompt4, text, jd], stream=True)
+        return response
     else:
         st.write("Please write a Jd")
 
@@ -54,9 +44,9 @@ def input_pdf_text(uploaded_file):
 
 # Prompt Template
 input_prompt1 = """
- You are an experienced Technical Human Resource Manager,your task is to review the provided resume against the job description. 
-  Please share your professional evaluation on whether the candidate's profile aligns with the role. 
- Highlight the strengths and weaknesses of the applicant in relation to the specified job requirements.
+ You are an experienced Technical Human Resource Manager,your task is to review the provided resume. 
+  Please share your professional evaluation on the candidate's profile. 
+ Highlight the strengths and weaknesses of the applicant.
 """
 
 input_prompt2 = """
@@ -101,24 +91,21 @@ if jdButton == "LinkedIn URL":
     job_url = st.text_input("LinkedIn Job URL")
     if job_url:
         jd = extract_job_description(job_url)
-        parts = jd.rsplit("Roles", 1)
-        job_title = parts[0]
-        job_description = parts[1].rsplit("Show more", 1)[0]
-        if jd == job_description:
-            st.write("same")
-        st.write(job_title)
-        st.write(job_description)
+        if jd:
+            st.write("URL processed successfully.")
+        else:
+            st.write("There is an error. Please try again later.")
 else:
-    jd = st.text_area("Paste the Job Description")
+    jd = st.text_area("Paste the job description")
 
 col1, col2 = st.columns(2)
 with col1:
-    submit2 = st.button("How Can I Improvise my Skills")
+    submit2 = st.button("How can I improve my skills")
 
 with col2:
     submit4 = st.button("Percentage match")
 
-submit3 = st.button("What are the Keywords That are Missing")
+submit3 = st.button("What are the keywords that are missing")
 
 
 question = st.text_input("What do you want to know?")
@@ -128,54 +115,38 @@ with col4:
     submit = st.button("Info from resume")
 
 with col5:
-    submit1 = st.button("Tell Me About the Resume")
+    submit1 = st.button("Tell me about the resume")
 
 text = input_pdf_text(uploaded_file)
 if submit:
 
     if question:
         response = get_gemini_repsonse(input_prompt5, text, question)
-        st.subheader(response)
+        for chunk in response:
+            st.subheader(chunk.text)
     else:
         st.write("Please ask a question")
 
 elif submit1:
 
     response = model.generate_content([input_prompt1, text])
-    st.subheader(response.text)
+    for chunk in response:
+        st.subheader(chunk.text)
 
 elif submit2:
-    if jd:
-        response = get_gemini_repsonse(input_prompt2, text, jd)
-        st.subheader(response)
-    else:
-        jd = extract_job_description(job_url)
-        parts = jd.rsplit("Powered by ", 1)
-        job_description = parts[0]
-        response = get_gemini_repsonse(input_prompt2, text, jd)
-        st.subheader(response)
+    response = get_gemini_repsonse(input_prompt2, text, jd)
+    for chunk in response:
+        st.subheader(chunk.text)
 
 elif submit3:
-    if jd:
-        response = get_gemini_repsonse(input_prompt3, text, jd)
-        st.subheader(response)
-    else:
-        jd = extract_job_description(job_url)
-        parts = jd.rsplit("Powered by ", 1)
-        job_description = parts[0]
-        response = get_gemini_repsonse(input_prompt3, text, jd)
-        st.subheader(response)
+    response = get_gemini_repsonse(input_prompt3, text, jd)
+    for chunk in response:
+        st.subheader(chunk.text)
 
 elif submit4:
-    if jd:
-        response = get_gemini_repsonse(input_prompt4, text, jd)
-        st.subheader(response)
-    else:
-        jd = extract_job_description(job_url)
-        parts = jd.rsplit("Powered by ", 1)
-        job_description = parts[0]
-        response = get_gemini_repsonse(input_prompt4, text, jd)
-        st.subheader(response)
+    response = get_gemini_repsonse(input_prompt4, text, jd)
+    for chunk in response:
+        st.subheader(chunk.text)
 
 st.markdown("---")
 st.caption("Resume Expert - Making Job Applications Easier")
