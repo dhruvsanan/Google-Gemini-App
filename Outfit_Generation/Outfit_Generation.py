@@ -9,15 +9,14 @@ import requests
 import streamlit as st
 from dotenv import load_dotenv
 import google.generativeai as genai
-import os
 
-genai.configure(api_key=os.getenv("GOOGLE_API _KEY"))
+genai.configure(api_key=st.secrets("GOOGLE_API _KEY"))
 
 
 model = genai.GenerativeModel("gemini-pro")
 
 REPLICATE_API_TOKEN = getpass()
-os.environ["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
+st.secrets["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
 
 
 def mistral(prompt):
