@@ -14,7 +14,7 @@ model = genai.GenerativeModel('gemini-pro')
 
 def extract_job_description(url):
     response = requests.get(url)
-    soup = BeautifulSoup(response.content, "lxml")
+    soup = BeautifulSoup(response.content, "html.parser")
     job_description_section = soup.find("section", {"class": "description"})
     job_description = job_description_section.get_text()
     job_description = job_description.strip()
@@ -22,6 +22,14 @@ def extract_job_description(url):
     job_title_element = soup.find_all('h1')
     job_title = job_title_element[0].text.strip()
     return job_title, job_description
+# def extract_job_description(url):
+#     response = requests.get(url)
+#     html_content = response.text
+#     soup = BeautifulSoup(html_content, "html.parser")
+#     job_description_section = soup.find("section", {"class": "description"})
+#     job_description = job_description_section.get_text()
+#     job_description = job_description.strip()
+#     return job_description
 
 
 def get_gemini_repsonse(input_prompt4, text, jd):
@@ -92,9 +100,14 @@ jd = ""
 if jdButton == "LinkedIn URL":
     job_url = st.text_input("LinkedIn Job URL")
     if job_url:
-        jt, jd = extract_job_description(job_url)
-        st.write(jt)
-        st.write(jd)
+        jd = extract_job_description(job_url)
+        parts = jd.rsplit("Roles", 1)
+        job_title = parts[0]
+        job_description = parts[1].rsplit("Show more", 1)[0]
+        if jd == job_description:
+            st.write("same")
+        st.write(job_title)
+        st.write(job_description)
 else:
     jd = st.text_area("Paste the Job Description")
 
