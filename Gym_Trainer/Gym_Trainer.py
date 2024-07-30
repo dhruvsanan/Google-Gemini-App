@@ -11,17 +11,17 @@ genai.configure(api_key=os.getenv("GOOGLE_API _KEY"))
 image_model = genai.GenerativeModel("gemini-1.5-pro")
 
 
-def gemini_response(input, image, prompt, input_prompt2):
+def gemini_response(image, input,  prompt, input_prompt2):
     if input:
         if image:
             response = image_model.generate_content(
-                [input, image, prompt+input_prompt2], stream=True, safety_settings={'HARASSMENT': 'block_none', })
+                [image, input, prompt+input_prompt2], stream=True, safety_settings={'HARASSMENT': 'block_none', 'DANGEROUS': 'block_none'})
         else:
             response = image_model.generate_content(
-                [input, prompt], stream=True, safety_settings={'HARASSMENT': 'block_none'})
+                [input, prompt], stream=True, safety_settings={'HARASSMENT': 'block_none', 'DANGEROUS': 'block_none'})
     else:
         response = image_model.generate_content(
-            [image, prompt+input_prompt2], stream=True, safety_settings={'HARASSMENT': 'block_none'})
+            [image, prompt+input_prompt2], stream=True, safety_settings={'HARASSMENT': 'block_none', 'DANGEROUS': 'block_none'})
     return response
 
 
@@ -46,14 +46,14 @@ def main():
                 You will receive an image of a body &
                 you give a rough estimate of what the body type might be and
                     answer questions based on the input image and
-                    in addition to that provide a complementry gym routine for a week tailored to the input image.
+                    in addition to that provide a complementary gym routine for a week tailored to the input image.
                 Make sure you act as a professional trainner. Don't try to give no as answer. Even if you don't understand, just give a generic answer.
                 """
 
     submit = st.button("Tell me about my body")
 
     if submit:
-        response = gemini_response(input, image, input_prompt, input_prompt2)
+        response = gemini_response(image, input, input_prompt, input_prompt2)
         st.subheader("The Response is")
         for chunk in response:
             st.write(chunk.text)
