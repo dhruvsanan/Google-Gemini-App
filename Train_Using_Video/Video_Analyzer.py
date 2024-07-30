@@ -11,7 +11,7 @@ load_dotenv()
 
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
-image_model = genai.GenerativeModel("gemini-pro-vision")
+image_model = genai.GenerativeModel("gemini-1.5-pro")
 
 
 def save_uploaded_video(video_file, file_path):
