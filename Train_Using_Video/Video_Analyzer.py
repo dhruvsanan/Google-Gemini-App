@@ -1,26 +1,28 @@
+import openai
+import datetime
+import cv2
+from PIL import Image
+import google.generativeai as genai
+import tempfile
+import os
+import streamlit as st
 from dotenv import load_dotenv
 load_dotenv()
 
-import streamlit as st
-import os
-import tempfile
-import google.generativeai as genai
-from PIL import Image
-import cv2
-import datetime
-import openai
-genai.configure(api_key=os.getenv("GOOGLE_API _KEY"))
+genai.configure(api_key=st.secrets["GOOGLE_API _KEY"])
 
-image_model=genai.GenerativeModel("gemini-pro-vision")
+image_model = genai.GenerativeModel("gemini-pro-vision")
+
 
 def save_uploaded_video(video_file, file_path):
     with open(file_path, "wb") as f:
         f.write(video_file.read())
 
+
 def get_frame(video_file):
     cap = cv2.VideoCapture(video_file)
     frame_count_s = 0
-    frame_count=cap.get(cv2.CAP_PROP_FRAME_COUNT)
+    frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)
     frame_rate = cap.get(cv2.CAP_PROP_FPS)
     new_frame_interval = int(frame_count / 15)
     total_length_seconds = frame_count / frame_rate
@@ -57,6 +59,8 @@ def get_frame(video_file):
     cap.release()
     st.write(len(frames))
     return frames
+
+
 def get_frames(video_file):
     cap = cv2.VideoCapture(video_file)
     frame_count = 0
@@ -65,7 +69,8 @@ def get_frames(video_file):
     if total_length_seconds > 60:
         # Video is more than 1 minute long, so delete the first 10 seconds and last 10 seconds
         start_frame = int(frame_rate * 10)  # First 10 seconds
-        end_frame = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) - (frame_rate * 10))  # Last 10 seconds
+        end_frame = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) -
+                        (frame_rate * 10))  # Last 10 seconds
         total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT) - (frame_rate * 20)
         new_frame_interval = int(total_frames / 16)
     else:
@@ -97,6 +102,7 @@ def get_frames(video_file):
     st.write(len(frames))
     return frames
 
+
 def handle_image_uploads(uploaded_file):
     # Initialize a list to store the images
     images = []
@@ -117,13 +123,16 @@ def handle_image_uploads(uploaded_file):
 
     # Return the list of images
     return images
+
+
 def transcribe(audio_file):
     transcript = openai.Audio.transcribe("whisper-1", audio_file)
     return transcript
+
+
 def save_audio_file(audio_bytes, file_extension):
     """
     Save audio bytes to a file with the specified extension.
-
     :param audio_bytes: Audio data in bytes
     :param file_extension: The extension of the output audio file
     :return: The name of the saved audio file
@@ -133,24 +142,25 @@ def save_audio_file(audio_bytes, file_extension):
 
     with open(file_name, "wb") as f:
         f.write(audio_bytes)
-
     return file_name
+
+
 def transcribe_audio(file_path):
     with open(file_path, "rb") as audio_file:
         transcript = transcribe(audio_file)
     return transcript["text"]
 
+
 st.set_page_config(page_title="Video Check")
+st.header("Video Check")
 
-st.header(" Video Check")
-
-question = st.text_input("Input: ",key="input")
+question = st.text_input("Input: ", key="input")
 video_file = st.file_uploader("Upload a video", type=["mp4"])
 
 # st.write(video_file._file_urls.upload_url)
 
-submit=st.button("Tell me about the Video")
-input_prompt="""
+submit = st.button("Tell me about the Video")
+input_prompt = """
 imagine the continuation of the images as a video.
 Hey Act Like a skilled or very experience Video Analyzer.
 Train your self with only the video and the transcript provided.
@@ -161,21 +171,22 @@ strike a friendly and converstional tone.
 If the answer to the question is out of the transcript or the video, you may ignore it or say sorry! I am unable answer it.
 Remember you only have to answer to question if the information is available in either transcript or video. Do not provide details of anything else including video and transcript."""
 
-if submit: 
+if submit:
     if video_file is not None:
         file_name = video_file.name
         file_path = os.path.join(tempfile.gettempdir(), file_name)
 
         save_uploaded_video(video_file, file_path)
-        frames=get_frames(file_path)
-        
+        frames = get_frames(file_path)
+
         images = handle_image_uploads(frames)
         transcript_text = transcribe_audio(file_path)
         st.write(transcript_text)
-        response = image_model.generate_content([transcript_text, *images ,input_prompt, question])
+        response = image_model.generate_content(
+            [transcript_text, *images, input_prompt, question])
         st.subheader("The Response is")
         st.write(response.text)
-        # image_data = response.text.split(",")[1] 
+        # image_data = response.text.split(",")[1]
         # image_bytes = base64.b64decode(image_data)
         # st.write(image_bytes)
         # image = cv2.imdecode(np.frombuffer(image_bytes, np.uint8), cv2.IMREAD_COLOR)
