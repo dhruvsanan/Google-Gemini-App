@@ -91,10 +91,11 @@ if jdButton == "LinkedIn URL":
     job_url = st.text_input("LinkedIn Job URL")
     if job_url:
         jd = extract_job_description(job_url)
-        if jd:
+        try:
+            jd = extract_job_description(job_url)
             st.write("URL processed successfully.")
-        else:
-            st.write("There is an error. Please try again later.")
+        except Exception:
+            st.write("There is an error. Please write a job description manually.")
 else:
     jd = st.text_area("Paste the job description")
 
