@@ -20,8 +20,7 @@ def extract_job_description(url):
     html_content = response.text
     soup = BeautifulSoup(html_content, "html.parser")
     job_description_section = soup.find("section", {"class": "description"})
-    job_description = job_description_section.get_text()
-    job_description = job_description.strip()
+    job_description = job_description_section.get_text(strip=True)
     return job_description
 
 
@@ -47,6 +46,7 @@ def input_pdf_text(uploaded_file):
     else:
         st.write("Please upload a PDF file to proceed.")
 
+
 def process_uploaded_files(uploaded_files, input_promptjt, jd, cutoff):
     percentage_matches = []
     for uploaded_file in stqdm(uploaded_files):
@@ -70,6 +70,7 @@ def process_uploaded_files(uploaded_files, input_promptjt, jd, cutoff):
     percentage_matches.sort(reverse=True)
     return percentage_matches
 
+
 st.set_page_config(page_title="Resume Expert")
 
 st.header("Smart ATS")
@@ -85,10 +86,11 @@ jd = ""
 if jdButton == "LinkedIn URL":
     job_url = st.text_input("LinkedIn Job URL")
     if job_url:
-        jd = extract_job_description(job_url)
-        parts = jd.rsplit("Roles", 1)
-        jt = parts[0]
-        jd = parts[1].rsplit("Show more", 1)[0]
+        try:
+            jd = extract_job_description(job_url)
+            st.write("URL processed successfully.")
+        except Exception:
+            st.write("There is an error. Please write a job description manually.")
 else:
     jt = st.text_input("Job Title: ", key="jt")
     jd = st.text_area("Job Description: ", key="jd")
@@ -111,15 +113,16 @@ if 'percentage_matches' not in st.session_state:
     st.session_state['percentage_matches'] = []
 
 if submit:
-    if jt and jd:
+    if jd:
         if uploaded_files:
-            percentage_matches = process_uploaded_files(uploaded_files, input_promptjt, jd, cutoff)
+            percentage_matches = process_uploaded_files(
+                uploaded_files, input_promptjt, jd, cutoff)
             st.session_state['percentage_matches'] = percentage_matches
         else:
             st.error(
                 "Please Upload a file")
     else:
-        st.write("Please write JT and JD")
+        st.write("Please write a job description")
 
 if st.session_state['percentage_matches']:
     for i, (percentage_match, uploaded_file_name, uploaded_file) in enumerate(st.session_state['percentage_matches']):
