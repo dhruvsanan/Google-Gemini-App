@@ -15,7 +15,7 @@ def gemini_response(image, input,  prompt, input_prompt2):
     if input:
         if image:
             response = image_model.generate_content(
-                [image, input, prompt+input_prompt2], stream=True, safety_settings={'HARASSMENT': 'block_none', 'DANGEROUS': 'block_none'})
+                [image, prompt+input_prompt2+" After that, answer the given question", input], stream=True, safety_settings={'HARASSMENT': 'block_none', 'DANGEROUS': 'block_none'})
         else:
             response = image_model.generate_content(
                 [input, prompt], stream=True, safety_settings={'HARASSMENT': 'block_none', 'DANGEROUS': 'block_none'})
@@ -44,9 +44,8 @@ def main():
                 """
     input_prompt2 = """
                 You will receive an image of a body &
-                you give a rough estimate of what the body type might be and
-                    answer questions based on the input image and
-                    in addition to that provide a complementary gym routine for a week tailored to the input image.
+                your job is to give a rough estimate of what the body type might be.
+                    After indentifying the body type, state the body type and provide a complementary gym routine for a week tailored to the input image.
                 Make sure you act as a professional trainner. Don't try to give no as answer. Even if you don't understand, just give a generic answer.
                 """
 
