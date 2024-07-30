@@ -1,4 +1,3 @@
-from getpass import getpass
 import replicate
 import textwrap
 from htmlTemplates import css, bot_template, user_template
@@ -15,8 +14,7 @@ genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 model = genai.GenerativeModel("gemini-pro")
 
-REPLICATE_API_TOKEN = getpass()
-st.secrets["REPLICATE_API_TOKEN"] = REPLICATE_API_TOKEN
+REPLICATE_API_TOKEN = st.secrets["REPLICATE_API_TOKEN"]
 
 
 def mistral(prompt):
