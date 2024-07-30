@@ -13,7 +13,7 @@ model = genai.GenerativeModel("gemini-pro")
 
 def gemini_response(messages):
     # response = chat.send_message(question,stream= True)
-    response = model.generate_content(messages, stream=True)
+    response = model.generate_content(messages)
     return response
     # return response
 
@@ -69,9 +69,9 @@ def main():
             #     'parts': [response.text]}
             # ]
             # st.session_state.messages.append(ai_messages)
-            for chunk in response:
-                st.session_state.messages.append({'role': 'model',
-                                                  'parts': [chunk]})
+            # for chunk in response:
+            st.session_state.messages.append({'role': 'model',
+                                              'parts': [response.text]})
             # st.session_state.conversation.append((input, response))
             clear_input_box()
             # st.write(response.text)
