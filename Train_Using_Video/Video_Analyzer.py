@@ -9,7 +9,7 @@ import streamlit as st
 from dotenv import load_dotenv
 load_dotenv()
 
-genai.configure(api_key=st.secrets["GOOGLE_API _KEY"])
+genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 
 image_model = genai.GenerativeModel("gemini-pro-vision")
 
