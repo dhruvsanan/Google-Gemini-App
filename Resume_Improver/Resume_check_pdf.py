@@ -101,15 +101,24 @@ if jdButton == "LinkedIn URL":
 else:
     jd = st.text_area("Paste the Job Description")
 
+col1, col2 = st.columns(2)
+with col1:
+    submit2 = st.button("How Can I Improvise my Skills")
 
-submit2 = st.button("How Can I Improvise my Skills")
+with col2:
+    submit4 = st.button("Percentage match")
 
 submit3 = st.button("What are the Keywords That are Missing")
 
-submit4 = st.button("Percentage match")
+
 question = st.text_input("What do you want to know?")
-submit = st.button("Info from resume")
-submit1 = st.button("Tell Me About the Resume")
+
+col4, col5 = st.columns(2)
+with col4:
+    submit = st.button("Info from resume")
+
+with col5:
+    submit1 = st.button("Tell Me About the Resume")
 
 text = input_pdf_text(uploaded_file)
 if submit:
