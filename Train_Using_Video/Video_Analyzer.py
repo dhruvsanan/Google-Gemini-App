@@ -152,7 +152,7 @@ def transcribe_audio(file_path):
 
 
 st.set_page_config(page_title="Video Check")
-st.header("Video Check")
+st.header("Video Analyser Check")
 
 question = st.text_input("Input: ", key="input")
 video_file = st.file_uploader("Upload a video", type=["mp4"])
