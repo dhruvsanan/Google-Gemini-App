@@ -104,7 +104,7 @@ def get_frames(video_file):
 
 
 def handle_image_uploads(uploaded_file):
-    # Initialize a list to store the images
+    # Initialize an array to store the images
     images = []
 
     # Iterate over the uploaded files
@@ -118,10 +118,10 @@ def handle_image_uploads(uploaded_file):
         # Assign the image to the unique variable
         globals()[image_variable_name] = image
 
-        # Add the image to the list
+        # Add the image to the array
         images.append(image)
 
-    # Return the list of images
+    # Return the array of images
     return images
 
 
